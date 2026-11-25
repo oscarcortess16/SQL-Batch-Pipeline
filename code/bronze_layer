@@ -1,0 +1,21 @@
+CREATE OR REFRESH STREAMING TABLE bronze_sales_transactions (
+  CONSTRAINT valid_raw_record EXPECT (`Order ID` IS NOT NULL)
+)
+TBLPROPERTIES ("quality" = "bronze")
+AS
+SELECT
+  `Order ID`         AS raw_order_id,
+  `Product`          AS raw_product,
+  `Quantity Ordered` AS raw_quantity_ordered,
+  `Price Each`       AS raw_price_each,
+  `Order Date`       AS raw_order_date,
+  `Purchase Address` AS raw_purchase_address,
+  _metadata.file_path              AS source_file_path,
+  _metadata.file_name              AS source_file_name,
+  _metadata.file_modification_time AS source_file_modified_at,
+  current_timestamp()              AS ingestion_timestamp
+FROM STREAM read_files(
+  's3://oscar-data/monthly-sales/',
+  format => 'csv',
+  header => true
+);
