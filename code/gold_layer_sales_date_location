@@ -1,0 +1,19 @@
+CREATE OR REFRESH MATERIALIZED VIEW gold_daily_regional_sales
+TBLPROPERTIES ("quality" = "gold")
+AS
+SELECT
+  s.order_date,
+  s.state_code,
+  s.city,
+  p.product_category,
+  COUNT(DISTINCT s.order_id) AS total_orders,
+  SUM(s.quantity_ordered)    AS total_units,
+  SUM(s.total_amount)        AS gross_revenue
+FROM LIVE.silver_sales_transactions s
+LEFT JOIN LIVE.gold_dim_products p
+  ON s.product_name = p.product_name
+GROUP BY
+  s.order_date,
+  s.state_code,
+  s.city,
+  p.product_category;
