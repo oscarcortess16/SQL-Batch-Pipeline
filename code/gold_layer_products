@@ -1,0 +1,16 @@
+CREATE OR REFRESH MATERIALIZED VIEW gold_dim_products
+TBLPROPERTIES ("quality" = "gold")
+AS
+SELECT DISTINCT
+  product_name,
+  CASE
+    WHEN product_name ILIKE '%Phone%' OR product_name ILIKE '%iPhone%' THEN 'Smartphones'
+    WHEN product_name ILIKE '%Laptop%' OR product_name ILIKE '%Macbook%' THEN 'Computers'
+    WHEN product_name ILIKE '%Monitor%' OR product_name ILIKE '%TV%' THEN 'Screen and TV'
+    WHEN product_name ILIKE '%Headphones%' OR product_name ILIKE '%Airpods%' THEN 'Audio'
+    WHEN product_name ILIKE '%Cable%' OR product_name ILIKE '%Batteries%' THEN 'Accessories'
+    ELSE 'Appliances'
+  END AS product_category,
+  MAX(unit_price) AS list_price
+FROM LIVE.silver_sales_transactions
+GROUP BY product_name;
