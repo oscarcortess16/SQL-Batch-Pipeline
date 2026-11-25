@@ -1,0 +1,16 @@
+CREATE OR REFRESH MATERIALIZED VIEW gold_sales_by_product
+TBLPROPERTIES ("quality" = "gold")
+AS
+SELECT
+  p.product_category,
+  s.product_name,
+  COUNT(DISTINCT s.order_id)          AS total_orders,
+  SUM(s.quantity_ordered)             AS total_units_sold,
+  SUM(s.total_amount)                 AS total_revenue,
+  ROUND(AVG(s.total_amount), 2)       AS avg_line_revenue
+FROM LIVE.silver_sales_transactions s
+INNER JOIN LIVE.gold_dim_products p
+  ON s.product_name = p.product_name
+GROUP BY
+  p.product_category,
+  s.product_name;
